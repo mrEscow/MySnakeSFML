@@ -12,7 +12,7 @@ bool inMenu = true;
 void menu(sf::RenderWindow &WIN)
 {
 	sf::Font font;//шрифт 
-	font.loadFromFile("MetroplexShadow.ttf");//передаем нашему шрифту файл шрифта
+	font.loadFromFile("MetroplexShadow.ttf");
 	sf::Text menu("", font, 100);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
 
 	//text.setColor(sf::Color::Red);//покрасили текст в красный. если убрать эту строку, то по умолчанию он белый
@@ -21,7 +21,7 @@ void menu(sf::RenderWindow &WIN)
 	menu.setString("MENU");//задает строку тексту
 	sf::FloatRect textRect = menu.getLocalBounds();
 	menu.setOrigin(textRect.width / 2, textRect.height / 2);
-	menu.setPosition(GORIZONT/2, 0);//задаем позицию текста, центр камеры
+	menu.setPosition(GORIZONT/2, 0);
 	
 	int lightButton = 200;
 	int hitgtButton = 50;
@@ -49,7 +49,7 @@ void menu(sf::RenderWindow &WIN)
 		if (!inMenu) { break; }
 
 		WIN.clear(sf::Color::Blue);
-		WIN.draw(menu);//рисую этот текст
+		WIN.draw(menu);
 		WIN.draw(battonONE);
 		WIN.draw(battonTWO);
 		WIN.draw(battonTHREE);
