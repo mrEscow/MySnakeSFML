@@ -1,6 +1,6 @@
 ﻿#include <SFML/Graphics.hpp>
-
 #include <sstream>
+#include <ctime>
 
 int SIZE = 30;
 
@@ -14,55 +14,14 @@ int lengthSnake = 3;
 
 bool inMenu = true;
 
-void menu(sf::RenderWindow &WIN)
+enum MENU
 {
-	sf::Font fontMenu;//шрифт 
-	fontMenu.loadFromFile("MetroplexShadow.ttf");
-	sf::Text menu("", fontMenu, 100);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	BATTnewGame,
+	BATTresumeGame,
+	BATTexitGame,
+	BATTnotBatton
 
-	//text.setColor(sf::Color::Red);//покрасили текст в красный. если убрать эту строку, то по умолчанию он белый
-	menu.setStyle(sf::Text::Bold | sf::Text::Underlined);//жирный и подчеркнутый текст. по умолчанию он "худой":)) и не подчеркнутый	
-
-	menu.setString("MENU");//задает строку тексту
-	sf::FloatRect textRect = menu.getLocalBounds();
-	menu.setOrigin(textRect.width / 2, textRect.height / 2);
-	menu.setPosition(GORIZONT/2, 0);
-	
-	int lightButton = 200;
-	int hitgtButton = 50;
-
-	sf::RectangleShape battonONE(sf::Vector2f(lightButton, hitgtButton));
-	battonONE.setPosition((GORIZONT / 2)-(lightButton/2), (VERTIKAL / 3)-(hitgtButton /2));
-
-	sf::RectangleShape battonTWO(sf::Vector2f(lightButton, hitgtButton));
-	battonTWO.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 2) - (hitgtButton / 2));
-
-	sf::RectangleShape battonTHREE(sf::Vector2f(lightButton, hitgtButton));
-	battonTHREE.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3 * 2) - (hitgtButton / 2));
-
-	while (WIN.isOpen())
-	{
-		sf::Event e2;
-		while (WIN.pollEvent(e2))
-		{
-			if (e2.type == sf::Event::Closed)
-				WIN.close();
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { inMenu = false; }
-		}
-		
-		if (!inMenu) { break; }
-
-		WIN.clear(sf::Color::Blue);
-		WIN.draw(menu);
-		WIN.draw(battonONE);
-		WIN.draw(battonTWO);
-		WIN.draw(battonTHREE);
-		WIN.display();
-	}
-
-}
-
+}MENU;
 
 enum Direction
 {
@@ -77,6 +36,127 @@ struct Snake
 	int x = GORIZONT / SIZE / 2;
 	int y = VERTIKAL / SIZE / 2;
 }snake[100];
+
+void menu(sf::RenderWindow &WIN)
+{
+	int lightButton = 200;
+	int hitgtButton = 50;
+
+	sf::Font fontMenu;
+	fontMenu.loadFromFile("MetroplexShadow.ttf");
+	sf::Text menu("", fontMenu, 100);
+
+	menu.setFillColor(sf::Color::Red);
+	menu.setStyle(sf::Text::Bold | sf::Text::Underlined);
+
+	menu.setString("MENU");
+	sf::FloatRect textRect = menu.getLocalBounds();
+	menu.setOrigin(textRect.width / 2, textRect.height / 2);
+	menu.setPosition(GORIZONT/2, 0);
+
+	sf::Font batton;
+	batton.loadFromFile("aSignboardCpsNrBoldItalic.ttf");
+
+	sf::Text fontNewGame("", batton, 30);
+	fontNewGame.setStyle(sf::Text::Bold);
+	fontNewGame.setString("  NEW GAME ");
+	fontNewGame.setFillColor(sf::Color::Black);
+	fontNewGame.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3) - (hitgtButton / 2));
+
+	sf::Text fontResumeGame("", batton, 30);
+	fontResumeGame.setStyle(sf::Text::Bold);
+	fontResumeGame.setString("   RESUME  ");
+	fontResumeGame.setFillColor(sf::Color::Black);
+	fontResumeGame.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 2) - (hitgtButton / 2));
+
+	sf::Text fontExitGame("", batton, 30);
+	fontExitGame.setStyle(sf::Text::Bold);
+	fontExitGame.setString("     EXIT    ");
+	fontExitGame.setFillColor(sf::Color::Black);
+	fontExitGame.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3 * 2) - (hitgtButton / 2));
+
+	sf::RectangleShape battonONE(sf::Vector2f(lightButton, hitgtButton));
+	battonONE.setFillColor(sf::Color::Yellow);
+	battonONE.setPosition((GORIZONT / 2)-(lightButton/2), (VERTIKAL / 3)-(hitgtButton /2));
+
+	sf::RectangleShape battonTWO(sf::Vector2f(lightButton, hitgtButton));
+	battonTWO.setFillColor(sf::Color::Yellow);
+	battonTWO.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 2) - (hitgtButton / 2));
+
+	sf::RectangleShape battonTHREE(sf::Vector2f(lightButton, hitgtButton));
+	battonTHREE.setFillColor(sf::Color::Yellow);
+	battonTHREE.setPosition((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3 * 2) - (hitgtButton / 2));
+
+	while (WIN.isOpen())
+	{
+		sf::Event e2;
+		while (WIN.pollEvent(e2))
+		{
+			if (e2.type == sf::Event::Closed)
+				WIN.close();
+
+			if (sf::IntRect((GORIZONT / 2) - (lightButton / 2 ), (VERTIKAL / 3) - (hitgtButton / 2), lightButton, hitgtButton).contains(sf::Mouse::getPosition(WIN)))
+			{ 
+				battonONE.setFillColor(sf::Color::Red); MENU = BATTnewGame;
+			}else 
+			{ battonONE.setFillColor(sf::Color::Yellow); }
+
+			if (sf::IntRect((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 2) - (hitgtButton / 2), lightButton, hitgtButton).contains(sf::Mouse::getPosition(WIN)))
+			{
+				battonTWO.setFillColor(sf::Color::Red);  MENU = BATTresumeGame;
+			}else 
+			{ battonTWO.setFillColor(sf::Color::Yellow); }
+
+			if (sf::IntRect((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3 * 2) - (hitgtButton / 2), lightButton, hitgtButton).contains(sf::Mouse::getPosition(WIN)))
+			{
+				battonTHREE.setFillColor(sf::Color::Red);  MENU = BATTexitGame;
+			}
+			else 
+			{ battonTHREE.setFillColor(sf::Color::Yellow); }
+
+			if (!(sf::IntRect((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3) - (hitgtButton / 2), lightButton, hitgtButton).contains(sf::Mouse::getPosition(WIN))) &&
+				!(sf::IntRect((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 2) - (hitgtButton / 2), lightButton, hitgtButton).contains(sf::Mouse::getPosition(WIN))) &&
+				!(sf::IntRect((GORIZONT / 2) - (lightButton / 2), (VERTIKAL / 3 * 2) - (hitgtButton / 2), lightButton, hitgtButton).contains(sf::Mouse::getPosition(WIN))))
+			{
+				battonONE.setFillColor(sf::Color::Yellow); MENU = BATTnotBatton;
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { inMenu = false; }
+
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && MENU == BATTnewGame)
+			{ 
+				lengthSnake = 0;
+				score = 0; 
+				BestScore = 0; 	
+				DIR = Right;
+				snake[0].x = GORIZONT / SIZE / 2;
+				snake[0].y = VERTIKAL / SIZE / 2;
+				lengthSnake = 3;
+				inMenu = false;
+			}
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && MENU == BATTresumeGame) { inMenu = false;}
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && MENU == BATTexitGame) { WIN.close();}
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && MENU == BATTnotBatton) {  }
+		}
+
+		if (!inMenu) { break; }
+
+		WIN.clear(sf::Color::Blue);
+
+		WIN.draw(menu);
+
+		WIN.draw(battonONE);
+		WIN.draw(fontNewGame);
+
+		WIN.draw(battonTWO);
+		WIN.draw(fontResumeGame);
+
+		WIN.draw(battonTHREE);
+		WIN.draw(fontExitGame);
+
+		WIN.display();
+	}
+}
 
 struct Apple
 {
@@ -119,15 +199,13 @@ void game()
 	{
 		if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) { lengthSnake = 3; snakeDie(); score = 0; }
 	}
-
-
 }
-
-
 
 int main()
 {
-	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL+SIZE+SIZE), "SNAKE", sf::Style::Default, sf::ContextSettings(0,0,8));
+	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL+SIZE+SIZE), "", sf::Style::None, sf::ContextSettings(0,0,8));
+
+	srand(time(NULL));
 
 	menu(WIN);
 
@@ -144,41 +222,35 @@ int main()
 	sf::RectangleShape appleBlock(sf::Vector2f(SIZE, SIZE));
 	appleBlock.setFillColor(sf::Color::Magenta);
 	appleBlock.setOutlineThickness(1.f);
-	appleBlock.setOutlineColor(sf::Color::Blue);
-	 
-	DIR = Right;
+	appleBlock.setOutlineColor(sf::Color::Blue);	
 
 	sf::Clock clock;
 	
 	apple.x = std::rand() % GORIZONT / SIZE;
 	apple.y = 1 + std::rand() % (VERTIKAL / SIZE);
-
 	
-	sf::Font font1;//шрифт 
+	sf::Font font1;
 	font1.loadFromFile("aSignboardCpsNrBoldItalic.ttf");
 
 	sf::Text fontscore("", font1, 30);
-	fontscore.setStyle(sf::Text::Bold);//жирный 
+	fontscore.setStyle(sf::Text::Bold);
 	fontscore.setPosition(0, VERTIKAL + SIZE );
 
 	sf::Text fontBestScore("", font1, 30);
-	fontBestScore.setStyle(sf::Text::Bold);//жирный 
-
-	//fontBestScore.setPosition(GORIZONT-(SIZE * 9), VERTIKAL + SIZE);
+	fontBestScore.setStyle(sf::Text::Bold);	
 
 	sf::Text fontESC("", font1, 25);
-	fontESC.setStyle(sf::Text::Bold);//жирный 
+	fontESC.setStyle(sf::Text::Bold);
 	fontESC.setString("--ESC = MENU--");
 	fontESC.setPosition(GORIZONT - fontESC.getLocalBounds().width, 0 );
 
 	sf::Text fontSNAKE("", font1, 25);
-	fontSNAKE.setStyle(sf::Text::Bold);//жирный 
+	fontSNAKE.setStyle(sf::Text::Bold);
 	fontSNAKE.setString("--SNAKE--");
 	fontSNAKE.setPosition(0, 0);
 
 	while (WIN.isOpen())
 	{
-
 		float time = clock.getElapsedTime().asSeconds();
 		float speedGame = 0.08;
 
@@ -189,10 +261,10 @@ int main()
 			if (e.type == sf::Event::Closed)
 				WIN.close();
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && DIR !=Left) { DIR = Right; }
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && DIR !=Right){ DIR = Left; }
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && DIR != Down) { DIR = Up; }
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && DIR != Up) { DIR = Down; }
+			if ((sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) && DIR !=Left) { DIR = Right; }
+			if ((sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) && DIR !=Right){ DIR = Left; }
+			if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && DIR != Down) { DIR = Up; }
+			if ((sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) && DIR != Up) { DIR = Down; }
 
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { inMenu = true; }
 		}
@@ -230,15 +302,15 @@ int main()
 		WIN.draw(fontESC);
 		WIN.draw(fontSNAKE);
 
-		std::ostringstream Score;    // объявили переменную
-		Score << score;		//занесли в нее число очков, то есть формируем строку
-		fontscore.setString("Score: " + Score.str());//задаем строку тексту и вызываем сформированную выше строку методом .str() 
+		std::ostringstream Score;   
+		Score << score;		
+		fontscore.setString("Score: " + Score.str());
 		WIN.draw(fontscore);
 		
-		std::ostringstream bestScore;    // объявили переменную
-		bestScore << ( BestScore );		//занесли в нее число очков, то есть формируем строку
+		std::ostringstream bestScore;  
+		bestScore << ( BestScore );		
 		fontBestScore.setPosition(GORIZONT - fontBestScore.getLocalBounds().width, VERTIKAL + SIZE);
-		fontBestScore.setString("Best score: " + bestScore.str());//задаем строку тексту и вызываем сформированную выше строку методом .str() 
+		fontBestScore.setString("Best score: " + bestScore.str());
 		WIN.draw(fontBestScore);
 
 		WIN.display();
