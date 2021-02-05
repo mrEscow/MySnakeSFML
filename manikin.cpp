@@ -1,4 +1,5 @@
 ﻿#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <sstream>
 #include <ctime>
 
@@ -37,8 +38,11 @@ struct Snake
 	int y = VERTIKAL / SIZE / 2;
 }snake[100];
 
-void menu(sf::RenderWindow &WIN)
+void menu(sf::RenderWindow &WIN, sf::Music &musicGame, sf::Music &musicMenu)
 {
+	musicGame.pause();
+	musicMenu.play();
+
 	int lightButton = 200;
 	int hitgtButton = 50;
 
@@ -133,6 +137,7 @@ void menu(sf::RenderWindow &WIN)
 				snake[0].y = VERTIKAL / SIZE / 2;
 				lengthSnake = 3;
 				inMenu = false;
+				musicGame.stop();
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && MENU == BATTresumeGame) { inMenu = false;}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && MENU == BATTexitGame) { WIN.close();}
@@ -156,6 +161,9 @@ void menu(sf::RenderWindow &WIN)
 
 		WIN.display();
 	}
+
+	musicMenu.stop();
+	musicGame.play();
 }
 
 struct Apple
@@ -169,8 +177,10 @@ void snakeDie()
 
 }
 
-void game()
+void game(sf::Sound &soundEat, sf::Sound &soundUps)
 {
+
+
 	for (size_t i = lengthSnake; i >= 1; i--)
 	{
 		snake[i].x = snake[i - 1].x;
@@ -189,6 +199,7 @@ void game()
 
 	if ((apple.x == snake[0].x) && (apple.y == snake[0].y))
 	{
+		soundEat.play();
 		lengthSnake++;
 		apple.x = std::rand() % GORIZONT / SIZE;
 		apple.y = 1 + std::rand() % (VERTIKAL / SIZE);
@@ -197,7 +208,7 @@ void game()
 
 	for (size_t i = 1; i < lengthSnake; i++)
 	{
-		if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) { lengthSnake = 3; snakeDie(); score = 0; }
+		if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) { soundUps.play(); lengthSnake = 3; snakeDie(); score = 0; }
 	}
 }
 
@@ -205,9 +216,30 @@ int main()
 {
 	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL+SIZE+SIZE), "", sf::Style::None, sf::ContextSettings(0,0,8));
 
+	sf::Music musicGame;
+	musicGame.openFromFile("8-Bit Universe - Jingle Bells_(Inkompmusic.ru).ogg");
+	musicGame.play();
+	musicGame.setVolume(30);
+	musicGame.setLoop(true);
+
+	sf::Music musicMenu;
+	musicMenu.openFromFile("8-Bit Universe - Teenage Mutant Ninja Turtles Theme_(Inkompmusic.ru).ogg");
+	musicMenu.setVolume(30);
+	musicMenu.setLoop(true);
+
+	sf::SoundBuffer AppleEat;
+	AppleEat.loadFromFile("AppleEat.wav");
+	sf::Sound soundEat;
+	soundEat.setBuffer(AppleEat);
+
+	sf::SoundBuffer SoundUps;
+	SoundUps.loadFromFile("ups.wav");
+	sf::Sound soundUps;
+	soundUps.setBuffer(SoundUps);
+
 	srand(time(NULL));
 
-	menu(WIN);
+	menu(WIN, musicGame, musicMenu);
 
 	sf::RectangleShape block(sf::Vector2f(SIZE, SIZE));
 	block.setFillColor(sf::Color::Yellow);
@@ -269,11 +301,11 @@ int main()
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { inMenu = true; }
 		}
 
-		if(inMenu){ menu(WIN); }
+		if(inMenu){ menu(WIN, musicGame, musicMenu); }
 
 		if (time > speedGame)
 		{
-			game();
+			game(soundEat, soundUps);
 			clock.restart();
 		}
 
