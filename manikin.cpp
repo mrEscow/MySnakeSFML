@@ -1,6 +1,11 @@
 ﻿#include <SFML/Graphics.hpp>
 
+#include <sstream>
+
 int SIZE = 30;
+
+int score = 0;
+int BestScore = 0;
 
 unsigned int GORIZONT = SIZE * SIZE;
 unsigned int VERTIKAL = SIZE * SIZE / 2;
@@ -11,9 +16,9 @@ bool inMenu = true;
 
 void menu(sf::RenderWindow &WIN)
 {
-	sf::Font font;//шрифт 
-	font.loadFromFile("MetroplexShadow.ttf");
-	sf::Text menu("", font, 100);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	sf::Font fontMenu;//шрифт 
+	fontMenu.loadFromFile("MetroplexShadow.ttf");
+	sf::Text menu("", fontMenu, 100);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
 
 	//text.setColor(sf::Color::Red);//покрасили текст в красный. если убрать эту строку, то по умолчанию он белый
 	menu.setStyle(sf::Text::Bold | sf::Text::Underlined);//жирный и подчеркнутый текст. по умолчанию он "худой":)) и не подчеркнутый	
@@ -102,11 +107,12 @@ void game()
 		lengthSnake++;
 		apple.x = std::rand() % GORIZONT / SIZE;
 		apple.y = std::rand() % VERTIKAL / SIZE;
+		score++;
 	}
 
 	for (size_t i = 1; i < lengthSnake; i++)
 	{
-		if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) { lengthSnake = 3; snakeDie(); }
+		if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) { lengthSnake = 3; snakeDie(); score = 0; }
 	}
 
 	if (DIR == Right && snake[0].x >= (GORIZONT / SIZE)) { snake[0].x = 0;  }
@@ -119,7 +125,7 @@ void game()
 
 int main()
 {
-	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL), "SNAKE", sf::Style::Default, sf::ContextSettings(0,0,8));
+	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL+SIZE), "SNAKE", sf::Style::Default, sf::ContextSettings(0,0,8));
 
 	menu(WIN);
 
@@ -144,6 +150,22 @@ int main()
 	
 	apple.x = std::rand() % GORIZONT / SIZE;
 	apple.y = std::rand() % VERTIKAL / SIZE;
+
+	
+	sf::Font font1;//шрифт 
+	font1.loadFromFile("aSignboardCpsNrBoldItalic.ttf");
+
+	sf::Text fontscore("", font1, 30);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	fontscore.setStyle(sf::Text::Bold);//жирный 
+	sf::FloatRect textRect = fontscore.getLocalBounds();
+	//fontscore.setOrigin(textRect.width / 2, textRect.height / 2);
+	fontscore.setPosition(0, VERTIKAL );
+
+	sf::Text fontBestScore("", font1, 30);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	fontBestScore.setStyle(sf::Text::Bold);//жирный 
+	sf::FloatRect textRect2 = fontBestScore.getLocalBounds();
+	//fontscore.setOrigin(textRect.width / 2, textRect.height / 2);
+	fontBestScore.setPosition(GORIZONT-(SIZE * 9), VERTIKAL);
 
 	while (WIN.isOpen())
 	{
@@ -174,6 +196,8 @@ int main()
 			clock.restart();
 		}
 
+		if (score >= BestScore) { BestScore = score; }
+
 		WIN.clear();
 
 		for (size_t i = 0; i < GORIZONT / SIZE ; i++)
@@ -193,6 +217,16 @@ int main()
 			snakeBlock.setPosition(snake[i].x * SIZE, snake[i].y * SIZE);
 			WIN.draw(snakeBlock);
 		}
+
+		std::ostringstream Score;    // объявили переменную
+		Score << score;		//занесли в нее число очков, то есть формируем строку
+		fontscore.setString("Score: " + Score.str());//задаем строку тексту и вызываем сформированную выше строку методом .str() 
+		WIN.draw(fontscore);
+		
+		std::ostringstream bestScore;    // объявили переменную
+		bestScore << ( BestScore );		//занесли в нее число очков, то есть формируем строку
+		fontBestScore.setString("Best score: " + bestScore.str());//задаем строку тексту и вызываем сформированную выше строку методом .str() 
+		WIN.draw(fontBestScore);
 
 		WIN.display();
 	}
