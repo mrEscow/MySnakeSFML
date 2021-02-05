@@ -74,14 +74,14 @@ enum Direction
 
 struct Snake
 {
-	int x;
-	int y;
+	int x = GORIZONT / SIZE / 2;
+	int y = VERTIKAL / SIZE / 2;
 }snake[100];
 
 struct Apple
 {
-	int x;
-	int y;
+	int x ;
+	int y ;
 }apple;
 
 void snakeDie()
@@ -91,7 +91,7 @@ void snakeDie()
 
 void game()
 {
-	for (size_t i = lengthSnake; i > 0; i--)
+	for (size_t i = lengthSnake; i >= 1; i--)
 	{
 		snake[i].x = snake[i - 1].x;
 		snake[i].y = snake[i - 1].y;
@@ -102,11 +102,16 @@ void game()
 	if (DIR == Up) { snake[0].y -= 1; }
 	if (DIR == Down) { snake[0].y += 1; }
 
+	if (DIR == Right && snake[0].x >= (GORIZONT / SIZE)) { snake[0].x = 0; }
+	if (DIR == Left && snake[0].x < 0) { snake[0].x = (GORIZONT / SIZE) - 1; }
+	if (DIR == Down && snake[0].y >= (VERTIKAL / SIZE) + 1) { snake[0].y = 1; }
+	if (DIR == Up && snake[0].y < 1) { snake[0].y = (VERTIKAL / SIZE); }
+
 	if ((apple.x == snake[0].x) && (apple.y == snake[0].y))
 	{
 		lengthSnake++;
 		apple.x = std::rand() % GORIZONT / SIZE;
-		apple.y = std::rand() % VERTIKAL / SIZE;
+		apple.y = 1 + std::rand() % (VERTIKAL / SIZE);
 		score++;
 	}
 
@@ -115,17 +120,14 @@ void game()
 		if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) { lengthSnake = 3; snakeDie(); score = 0; }
 	}
 
-	if (DIR == Right && snake[0].x >= (GORIZONT / SIZE)) { snake[0].x = 0;  }
-	if (DIR == Left && snake[0].x < 0) { snake[0].x = (GORIZONT / SIZE)-1;  }
-	if (DIR == Down && snake[0].y >= (VERTIKAL / SIZE)) { snake[0].y = 0;  }
-	if (DIR == Up && snake[0].y < 0) { snake[0].y = (VERTIKAL / SIZE)-1;  }
+
 }
 
 
 
 int main()
 {
-	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL+SIZE), "SNAKE", sf::Style::Default, sf::ContextSettings(0,0,8));
+	sf::RenderWindow WIN(sf::VideoMode(GORIZONT, VERTIKAL+SIZE+SIZE), "SNAKE", sf::Style::Default, sf::ContextSettings(0,0,8));
 
 	menu(WIN);
 
@@ -143,29 +145,36 @@ int main()
 	appleBlock.setFillColor(sf::Color::Magenta);
 	appleBlock.setOutlineThickness(1.f);
 	appleBlock.setOutlineColor(sf::Color::Blue);
-
+	 
 	DIR = Right;
 
 	sf::Clock clock;
 	
 	apple.x = std::rand() % GORIZONT / SIZE;
-	apple.y = std::rand() % VERTIKAL / SIZE;
+	apple.y = 1 + std::rand() % (VERTIKAL / SIZE);
 
 	
 	sf::Font font1;//шрифт 
 	font1.loadFromFile("aSignboardCpsNrBoldItalic.ttf");
 
-	sf::Text fontscore("", font1, 30);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	sf::Text fontscore("", font1, 30);
 	fontscore.setStyle(sf::Text::Bold);//жирный 
-	sf::FloatRect textRect = fontscore.getLocalBounds();
-	//fontscore.setOrigin(textRect.width / 2, textRect.height / 2);
-	fontscore.setPosition(0, VERTIKAL );
+	fontscore.setPosition(0, VERTIKAL + SIZE );
 
-	sf::Text fontBestScore("", font1, 30);//создаем объект текст. закидываем в объект текст строку, шрифт, размер шрифта(в пикселях);//сам объект текст (не строка)
+	sf::Text fontBestScore("", font1, 30);
 	fontBestScore.setStyle(sf::Text::Bold);//жирный 
-	sf::FloatRect textRect2 = fontBestScore.getLocalBounds();
-	//fontscore.setOrigin(textRect.width / 2, textRect.height / 2);
-	fontBestScore.setPosition(GORIZONT-(SIZE * 9), VERTIKAL);
+
+	//fontBestScore.setPosition(GORIZONT-(SIZE * 9), VERTIKAL + SIZE);
+
+	sf::Text fontESC("", font1, 25);
+	fontESC.setStyle(sf::Text::Bold);//жирный 
+	fontESC.setString("--ESC = MENU--");
+	fontESC.setPosition(GORIZONT - fontESC.getLocalBounds().width, 0 );
+
+	sf::Text fontSNAKE("", font1, 25);
+	fontSNAKE.setStyle(sf::Text::Bold);//жирный 
+	fontSNAKE.setString("--SNAKE--");
+	fontSNAKE.setPosition(0, 0);
 
 	while (WIN.isOpen())
 	{
@@ -202,21 +211,24 @@ int main()
 
 		for (size_t i = 0; i < GORIZONT / SIZE ; i++)
 		{
-			for (size_t j = 0; j < VERTIKAL / SIZE; j++)
+			for (size_t j = 1; j <= VERTIKAL / SIZE; j++)
 			{
 				WIN.draw(block);
 				block.setPosition(i * SIZE, j * SIZE);
 			}
 		}
 
-		appleBlock.setPosition(apple.x * SIZE, apple.y * SIZE);
-		WIN.draw(appleBlock);
+			appleBlock.setPosition(apple.x * SIZE, apple.y * SIZE);
+			WIN.draw(appleBlock);
 
 		for (size_t i = 0; i < lengthSnake; i++)
 		{
 			snakeBlock.setPosition(snake[i].x * SIZE, snake[i].y * SIZE);
 			WIN.draw(snakeBlock);
 		}
+
+		WIN.draw(fontESC);
+		WIN.draw(fontSNAKE);
 
 		std::ostringstream Score;    // объявили переменную
 		Score << score;		//занесли в нее число очков, то есть формируем строку
@@ -225,6 +237,7 @@ int main()
 		
 		std::ostringstream bestScore;    // объявили переменную
 		bestScore << ( BestScore );		//занесли в нее число очков, то есть формируем строку
+		fontBestScore.setPosition(GORIZONT - fontBestScore.getLocalBounds().width, VERTIKAL + SIZE);
 		fontBestScore.setString("Best score: " + bestScore.str());//задаем строку тексту и вызываем сформированную выше строку методом .str() 
 		WIN.draw(fontBestScore);
 
